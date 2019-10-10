@@ -36,7 +36,10 @@ nfa::nfa(int s, int syms)
 	a_states = s;
 	a_symbols = syms;
 
-	transitions.resize(syms);
+	for(int i=0;i<syms;i++)
+	{
+		transitions.insert(std::unordered_map<int,int> t);
+	}
 }
 
 void nfa::ip_trans(int t)
