@@ -47,10 +47,12 @@ int main()
 	e[0] = i;
 	eclosure(tr, v, e, &i, &k);
 
+	printf("\nE-closures of %d state: { ", i);
+
 	for(int j=0;j<k;j++)
 	    printf("%d ", e[j]);
 
-	printf("\n");
+	printf("}\n");
     }
 
     return 0;
@@ -62,9 +64,19 @@ void eclosure(transition **tr, int *v, int *e, int *i, int *k)
     {
 	if(tr[*i][j].input == -1)
 	{
+		int flag=0;
+		for(int l=0;l<(*k);l++)
+		{
+			if(e[l] == tr[*i][j].next_state)
+				flag = 1;
+		}
+
+		if(!flag)
+		{
 	    e[*k] = tr[*i][j].next_state;
 	    (*k)++;
 	    eclosure(tr, v, e, &tr[*i][j].next_state, k);
+		}
 	}
     }
 }
