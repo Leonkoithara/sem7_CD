@@ -52,8 +52,10 @@ int main()
 	for(int j=0;j<k;j++)
 	    printf("%d ", e[j]);
 
-	printf("}\n");
+	printf("}");
     }
+
+	printf("\n");
 
     return 0;
 }
