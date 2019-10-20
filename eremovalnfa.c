@@ -8,6 +8,8 @@ typedef struct
     int next_state;
 }transition;
 
+void eclosure(transition **tr, int *v, int *e, int *i, int *k);
+
 int main()
 {
     int syms, n, t;
@@ -20,12 +22,16 @@ int main()
     scanf("%d", &t);
 
     int *v = (int*)malloc(n*sizeof(int));
-    int *e = (int*)malloc(n*sizeof(int));
+    int **e = (int*)malloc(n*sizeof(int));
     bzero(v, n);
     transition **tr1 = (transition**)malloc(n*sizeof(transition*));
     transition **tr2 = (transition**)malloc(n*sizeof(transition*));
     for(int i=0;i<n;i++)
+    {
 	tr1[i] = (transition*)malloc(t*sizeof(transition));
+	tr2[i] = (transition*)malloc(t*sizeof(transition));
+	e[i] = (int*)malloc(n*sizeof(int));
+    }
 
     for(int i=0;i<t;i++)
     {
@@ -39,18 +45,35 @@ int main()
 	tr1[t1][v[t1]].next_state = t2;
 	v[t1]++;
     }
-
-	for(int i=0;i<n;i++)
-	{
-		for(int j=0;j<syms;j++)
-		{
-		}
-	}
+    
+    for(int i=0;i<n;i++)
+    {
+	int k=1;
+	e[0] = i;
+	eclosure(tr, v, e, &i, &k);
+    }
 
     return 0;
 }
-
-void closure(transition **tr1, transition **tr2, int *v, int *i, int *k)
+void eclosure(transition **tr, int *v, int *e, int *i, int *k)
 {
-	
+    for(int j=0;j<v[*i];j++)
+    {
+	if(tr[*i][j].input == -1)
+	{
+	    int flag=0;
+	    for(int l=0;l<(*k);l++)
+	    {
+		if(e[l] == tr[*i][j].next_state)
+		    flag = 1;
+	    }
+
+	    if(!flag)
+	    {
+		e[*k] = tr[*i][j].next_state;
+		(*k)++;
+		eclosure(tr, v, e, &tr[*i][j].next_state, k);
+	    }
+	}
+    }
 }
