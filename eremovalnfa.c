@@ -9,6 +9,7 @@ typedef struct
 }transition;
 
 void eclosure(transition **tr, int *v, int *e, int *i, int *k);
+void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *ke, int i, int j);
 
 int main()
 {
@@ -22,8 +23,11 @@ int main()
     scanf("%d", &t);
 
     int *v = (int*)malloc(n*sizeof(int));
-    int **e = (int*)malloc(n*sizeof(int));
+    int *v2 = (int*)malloc(n*sizeof(int));
+    int **e = (int**)malloc(n*sizeof(int*));
+    int *ke = (int*)malloc(n*sizeof(int));
     bzero(v, n);
+    bzero(v2, n);
     transition **tr1 = (transition**)malloc(n*sizeof(transition*));
     transition **tr2 = (transition**)malloc(n*sizeof(transition*));
     for(int i=0;i<n;i++)
@@ -49,10 +53,26 @@ int main()
     for(int i=0;i<n;i++)
     {
 	int k=1;
-	e[0] = i;
-	eclosure(tr, v, e, &i, &k);
+	e[i][0] = i;
+	eclosure(tr1, v, e[i], &i, &k);
+	ke[i] = k;
     }
 
+    for(int i=0;i<n;i++)
+    {
+	for(int j=0;j<syms;j++)
+	{
+	    closure(tr1, tr2, v, v2, e, ke, i, j);
+	}
+    }
+
+    for(int i=0;i<n;i++)
+    {
+	for(int j=0;j<v2[i];j++)
+	{
+	    printf("%d %d %d\n", i, tr2[i][j].input, tr2[i][j].next_state);
+	}
+    }
     return 0;
 }
 void eclosure(transition **tr, int *v, int *e, int *i, int *k)
@@ -73,6 +93,50 @@ void eclosure(transition **tr, int *v, int *e, int *i, int *k)
 		e[*k] = tr[*i][j].next_state;
 		(*k)++;
 		eclosure(tr, v, e, &tr[*i][j].next_state, k);
+	    }
+	}
+    }
+}
+
+void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *ke, int i, int j)
+{
+    for(int l=0;l<ke[i];l++)
+    {
+	for(int m=0;m<v[e[i][l]];m++)
+	{
+	    if(tr1[e[i][l]][m].input == j)
+	    {
+		int flag=0;
+		for(int x=0;x<v2[i];x++)
+		{
+		    if(tr2[i][x].next_state == tr1[e[i][l]][m].next_state)
+			flag = 1;
+		}
+
+		if(!flag)
+		{
+		    tr2[i][v2[i]].input = j;
+		    tr2[i][v2[i]].next_state = tr1[e[i][l]][m].next_state;
+		    v2[i]++;
+
+
+		    for(int x=0;x<ke[tr1[e[i][l]][m].next_state];x++)
+		    {
+			int flag=0;
+			for(int y=0;y<v2[i];y++)
+			{
+			    if(tr2[i][y].input == j && tr2[i][y].next_state == e[tr1[e[i][l]][m].next_state][x])
+				flag = 1;
+			}
+
+			if(!flag)
+			{
+			    tr2[i][v2[i]].input = j;
+			    tr2[i][v2[i]].next_state = e[tr1[e[i][l]][m].next_state][x];
+			    v2[i]++;
+			}
+		    }
+		}
 	    }
 	}
     }
