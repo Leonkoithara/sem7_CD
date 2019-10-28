@@ -13,7 +13,7 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
 
 int main()
 {
-    int syms, n, t;
+    int syms, n, n3, t;
 
     printf("Enter number of alphabets: ");
     scanf("%d", &syms);
@@ -24,12 +24,14 @@ int main()
 
     int *v = (int*)malloc(n*sizeof(int));
     int *v2 = (int*)malloc(n*sizeof(int));
+    int *v3 = (int*)malloc(1*sizeof(int));
     int **e = (int**)malloc(n*sizeof(int*));
     int *ke = (int*)malloc(n*sizeof(int));
     bzero(v, n);
     bzero(v2, n);
     transition **tr1 = (transition**)malloc(n*sizeof(transition*));
     transition **tr2 = (transition**)malloc(n*sizeof(transition*));
+    transition **tr3 = (transition**)malloc(n*sizeof(transition*));
     for(int i=0;i<n;i++)
     {
 	tr1[i] = (transition*)malloc(t*sizeof(transition));
@@ -58,21 +60,10 @@ int main()
 	ke[i] = k;
     }
 
-    for(int i=0;i<n;i++)
-    {
-	for(int j=0;j<syms;j++)
-	{
-	    closure(tr1, tr2, v, v2, e, ke, i, j);
-	}
-    }
-
-    for(int i=0;i<n;i++)
-    {
-	for(int j=0;j<v2[i];j++)
-	{
-	    printf("%d %d %d\n", i, tr2[i][j].input, tr2[i][j].next_state);
-	}
-    }
+    int n2=1;
+    
+    dfa(tr2, tr3, v2, v3, &n2);
+    
     return 0;
 }
 void eclosure(transition **tr, int *v, int *e, int *i, int *k)
@@ -109,7 +100,7 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
 		int flag=0;
 		for(int x=0;x<v2[i];x++)
 		{
-		    if(tr2[i][x].next_state == tr1[e[i][l]][m].next_state && tr2[i][x].input == j)
+		    if(tr2[i][x].next_state == tr1[e[i][l]][m].next_state)
 			flag = 1;
 		}
 
@@ -140,4 +131,8 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
 	    }
 	}
     }
+}
+
+void dfa(transition **tr1, transition **tr3, int *v2, int *v3, int *n)
+{
 }
