@@ -24,11 +24,12 @@ int main()
 
     int *v = (int*)malloc(n*sizeof(int));
     int *v2 = (int*)malloc(n*sizeof(int));
-    int *v3 = (int*)malloc(1*sizeof(int));
+    int *v3 = (int*)malloc(n*sizeof(int));
     int **e = (int**)malloc(n*sizeof(int*));
     int *ke = (int*)malloc(n*sizeof(int));
     bzero(v, n);
     bzero(v2, n);
+    bzero(v3, n);
     transition **tr1 = (transition**)malloc(n*sizeof(transition*));
     transition **tr2 = (transition**)malloc(n*sizeof(transition*));
     transition **tr3 = (transition**)malloc(n*sizeof(transition*));
@@ -60,7 +61,10 @@ int main()
 	ke[i] = k;
     }
 
-    int n2=1;
+    int n2=1, q0;
+    printf("Enter start state: ");
+    scanf("%d", q0);
+    v3[q0]++;
     
     dfa(tr2, tr3, v2, v3, &n2);
     
