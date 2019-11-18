@@ -71,9 +71,10 @@ int main()
 	states[0][0]=q0;
 	v3[0]=1;
     
-	for(int i=0;i<syms;i++)
+	for(int i=0;i<no_states;i++)
 	{
-    	dfa(tr2, tr3, v2, v3, states, i, 0, &n2);
+		for(int j=0;j<syms;j++)
+    		dfa(tr2, tr3, v2, v3, states, j, i, &n2);
 	}
     
     return 0;
@@ -170,4 +171,31 @@ void dfa(transition **tr2, transition **tr3, int *v2, int *v3, int **states, int
 			}
 		}
 	}
+
+	int flag=1, t;
+	for(int x=0;x<*no_states;x++)
+	{
+		flag=1;
+		for(int y=0;y<v3[x];y++)
+		{
+			if(states[x][y] != new_state[y])
+				flag=0;
+		}
+
+		if(flag)
+		{
+			free(new_state);
+			new_state = states[x];
+			t = x;
+			break;
+		}
+	}
+	if(flag)
+	{
+		no_states++;
+		t = no_states;
+	}
+
+	tr3[curr_state][sym].input = sym;
+	tr3[curr_state][sym].next_state = t;
 }
