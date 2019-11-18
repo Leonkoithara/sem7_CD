@@ -8,12 +8,14 @@ typedef struct
     int next_state;
 }transition;
 
+int n;
+
 void eclosure(transition **tr, int *v, int *e, int *i, int *k);
 void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *ke, int i, int j);
 
 int main()
 {
-    int syms, n, n3, t;
+    int syms, n3, t;
 
     printf("Enter number of alphabets: ");
     scanf("%d", &syms);
@@ -62,11 +64,17 @@ int main()
     }
 
     int n2=1, q0;
+	int **states = (int**)malloc(1*sizeof(int*));
     printf("Enter start state: ");
     scanf("%d", q0);
-    v3[q0]++;
+	int *states[0] = (int*)malloc(1*sizeof(int));
+	states[0][0]=q0;
+	v3[0]=1;
     
-    dfa(tr2, tr3, v2, v3, &n2);
+	for(int i=0;i<syms;i++)
+	{
+    	dfa(tr2, tr3, v2, v3, states, i, 0, &n2);
+	}
     
     return 0;
 }
@@ -137,6 +145,29 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
     }
 }
 
-void dfa(transition **tr1, transition **tr3, int *v2, int *v3, int *n)
+void dfa(transition **tr2, transition **tr3, int *v2, int *v3, int **states, int sym, int curr_state, int *no_states)
 {
+	int *new_state = (int*)malloc(n*sizeof(int));
+	int k=0;
+
+	for(int i=0;i<v3[curr_state];i++)
+	{
+		for(int j=0;j<v2[states[curr_state][i]];j++)
+		{
+			if(tr2[states[curr_state][i]][j].input == sym)
+			{
+				int flag=0;
+				for(int x=0;x<k;x++)
+				{
+					if(new_state[x] == tr2[states[curr_state][i]][j].next_state)
+						flag=1;
+				}
+				if(!flag)
+				{
+					new_state[k] = tr2[states[curr_state][i]][j].next_state;
+					k++;
+				}
+			}
+		}
+	}
 }
