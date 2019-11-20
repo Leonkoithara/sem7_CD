@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <math.h>
+#include <string.h>
 
 typedef struct
 {
@@ -8,14 +10,18 @@ typedef struct
     int next_state;
 }transition;
 
-int n;
+int n, syms;
+
+int compare (const void *a, const void *b)
+{ return ( *(int*)a - *(int*)b ); }
 
 void eclosure(transition **tr, int *v, int *e, int *i, int *k);
 void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *ke, int i, int j);
+int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, int *v3, int sym, int curr_state, int *no_states);
 
 int main()
 {
-    int syms, n3, t;
+    int t;
 
     printf("Enter number of alphabets: ");
     scanf("%d", &syms);
@@ -26,15 +32,12 @@ int main()
 
     int *v = (int*)malloc(n*sizeof(int));
     int *v2 = (int*)malloc(n*sizeof(int));
-    int *v3 = (int*)malloc(n*sizeof(int));
     int **e = (int**)malloc(n*sizeof(int*));
     int *ke = (int*)malloc(n*sizeof(int));
     bzero(v, n);
     bzero(v2, n);
-    bzero(v3, n);
     transition **tr1 = (transition**)malloc(n*sizeof(transition*));
     transition **tr2 = (transition**)malloc(n*sizeof(transition*));
-    transition **tr3 = (transition**)malloc(n*sizeof(transition*));
     for(int i=0;i<n;i++)
     {
 	tr1[i] = (transition*)malloc(t*sizeof(transition));
@@ -63,20 +66,49 @@ int main()
 	ke[i] = k;
     }
 
-    int n2=1, q0;
-	int **states = (int**)malloc(1*sizeof(int*));
-    printf("Enter start state: ");
-    scanf("%d", q0);
-	int *states[0] = (int*)malloc(1*sizeof(int));
-	states[0][0]=q0;
-	v3[0]=1;
-    
-	for(int i=0;i<no_states;i++)
+    for(int i=0;i<n;i++)
+    {
+	for(int j=0;j<syms;j++)
 	{
-		for(int j=0;j<syms;j++)
-    		dfa(tr2, tr3, v2, v3, states, j, i, &n2);
+	    closure(tr1, tr2, v, v2, e, ke, i, j);
 	}
+    }
+
+    int max_size = pow(2, n);
+    int no_states=1, q0;
+    int **states = (int**)malloc(1*sizeof(int*));
+    transition **tr3 = (transition**)malloc(max_size*sizeof(transition*));
+    for (int i=0; i<max_size; ++i)
+    {
+	tr3[i] = (transition*)malloc(syms*sizeof(transition));
+	memset(tr3[i], -1, syms*sizeof(transition));
+    }
+
+    int *v3 = (int*)malloc(max_size*sizeof(int));
+    printf("Enter start state: ");
+    scanf("%d", &q0);
+    states[0] = (int*)malloc(1*sizeof(int));
+    states[0][0]=q0;
+    v3[0]=1;
     
+    for(int i=0;i<no_states;i++)
+    {
+	for(int j=0;j<syms;j++)
+	{
+	    dfa(tr2, tr3, v2, states, v3[i], v3,  j, i, &no_states);
+	}
+    }
+
+    for (int i=0; i<no_states; ++i)
+    {
+	for (int j=0; j<syms; j++)
+	{
+	    printf("%d %d %d\n", i, j, tr3[i][j].next_state);
+	}
+
+    }
+
+
     return 0;
 }
 void eclosure(transition **tr, int *v, int *e, int *i, int *k)
@@ -113,7 +145,7 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
 		int flag=0;
 		for(int x=0;x<v2[i];x++)
 		{
-		    if(tr2[i][x].next_state == tr1[e[i][l]][m].next_state)
+		    if(tr2[i][x].next_state == tr1[e[i][l]][m].next_state && tr2[i][x].input == j)
 			flag = 1;
 		}
 
@@ -146,56 +178,60 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
     }
 }
 
-void dfa(transition **tr2, transition **tr3, int *v2, int *v3, int **states, int sym, int curr_state, int *no_states)
+int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, int *v3, int sym, int curr_state, int *no_states)
 {
-	int *new_state = (int*)malloc(n*sizeof(int));
-	int k=0;
+    int *new_state = (int*)malloc(n*sizeof(int));
+    int k=0;
 
-	for(int i=0;i<v3[curr_state];i++)
+    for(int i=0;i<size;i++)
+    {
+	for(int j=0;j<v2[states[curr_state][i]];j++)
 	{
-		for(int j=0;j<v2[states[curr_state][i]];j++)
+	    if(tr2[states[curr_state][i]][j].input == sym)
+	    {
+		int flag=0;
+		for(int x=0;x<k;x++)
 		{
-			if(tr2[states[curr_state][i]][j].input == sym)
-			{
-				int flag=0;
-				for(int x=0;x<k;x++)
-				{
-					if(new_state[x] == tr2[states[curr_state][i]][j].next_state)
-						flag=1;
-				}
-				if(!flag)
-				{
-					new_state[k] = tr2[states[curr_state][i]][j].next_state;
-					k++;
-				}
-			}
+		    if(new_state[x] == tr2[states[curr_state][i]][j].next_state)
+			flag=1;
 		}
+		if(!flag)
+		{
+		    new_state[k] = tr2[states[curr_state][i]][j].next_state;
+		    k++;
+		}
+	    }
+	}
+    }
+
+    qsort(new_state, k, sizeof(int), compare);
+
+    int flag=1, t;
+    for(int x=0;x<*no_states;x++)
+    {
+	flag=1;
+	for(int y=0;y<v3[x];y++)
+	{
+	    if(states[x][y] != new_state[y])
+		flag=0;
 	}
 
-	int flag=1, t;
-	for(int x=0;x<*no_states;x++)
-	{
-		flag=1;
-		for(int y=0;y<v3[x];y++)
-		{
-			if(states[x][y] != new_state[y])
-				flag=0;
-		}
-
-		if(flag)
-		{
-			free(new_state);
-			new_state = states[x];
-			t = x;
-			break;
-		}
-	}
 	if(flag)
 	{
-		no_states++;
-		t = no_states;
+	    free(new_state);
+	    new_state = states[x];
+	    t = x;
+	    break;
 	}
+    }
+    if(!flag)
+    {
+	(*no_states)++;
+	t = *no_states-1;
+	v3[t] = k;
+	states[t] = new_state;
+    }
 
-	tr3[curr_state][sym].input = sym;
-	tr3[curr_state][sym].next_state = t;
+    tr3[curr_state][sym].input = sym;
+    tr3[curr_state][sym].next_state = t;
 }
