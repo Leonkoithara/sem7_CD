@@ -211,11 +211,7 @@ int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int *v3, int
     }
 
     if(k == 0)
-    {
-	tr3[curr_state][sym].input = sym;
-	tr3[curr_state][sym].next_state = -1;
 	return 0;
-    }
 
     qsort(new_state, k, sizeof(int), compare);
 
