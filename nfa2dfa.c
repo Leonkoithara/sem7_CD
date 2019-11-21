@@ -223,6 +223,9 @@ int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int *v3, int
     for(int x=0;x<*no_states;x++)
     {
 	flag=1;
+	if(v3[x] != k)
+	    flag=0;
+	
 	for(int y=0;y<v3[x];y++)
 	{
 	    if(states[x][y] != new_state[y])
