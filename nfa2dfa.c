@@ -17,7 +17,7 @@ int compare (const void *a, const void *b)
 
 void eclosure(transition **tr, int *v, int *e, int *i, int *k);
 void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *ke, int i, int j);
-int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, int *v3, int sym, int curr_state, int *no_states);
+int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int *v3, int sym, int curr_state, int *no_states, int *new_state);
 
 int main()
 {
@@ -76,18 +76,19 @@ int main()
 
     int max_size = pow(2, n);
     int no_states=1, q0;
-    int **states = (int**)malloc(1*sizeof(int*));
+    int **states = (int**)malloc(max_size*sizeof(int*));
     transition **tr3 = (transition**)malloc(max_size*sizeof(transition*));
+    int *v3 = (int*)malloc(max_size*sizeof(int));
     for (int i=0; i<max_size; ++i)
     {
 	tr3[i] = (transition*)malloc(syms*sizeof(transition));
-	memset(tr3[i], -1, syms*sizeof(transition));
+	states[i] = (int*)malloc(n*sizeof(int));
     }
 
-    int *v3 = (int*)malloc(max_size*sizeof(int));
+
     printf("Enter start state: ");
     scanf("%d", &q0);
-    states[0] = (int*)malloc(1*sizeof(int));
+
     states[0][0]=q0;
     v3[0]=1;
     
@@ -95,7 +96,13 @@ int main()
     {
 	for(int j=0;j<syms;j++)
 	{
-	    dfa(tr2, tr3, v2, states, v3[i], v3,  j, i, &no_states);
+	    int flag = dfa(tr2, tr3, v2, states, v3,  j, i, &no_states, states[no_states]);
+
+	    if(!flag)
+	    {
+		tr3[i][j].input = j;
+		tr3[i][j].next_state = -1;
+	    }
 	}
     }
 
@@ -178,12 +185,11 @@ void closure(transition **tr1, transition **tr2, int *v, int *v2, int **e, int *
     }
 }
 
-int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, int *v3, int sym, int curr_state, int *no_states)
+int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int *v3, int sym, int curr_state, int *no_states, int *new_state)
 {
-    int *new_state = (int*)malloc(n*sizeof(int));
     int k=0;
 
-    for(int i=0;i<size;i++)
+    for(int i=0;i<v3[curr_state];i++)
     {
 	for(int j=0;j<v2[states[curr_state][i]];j++)
 	{
@@ -204,6 +210,13 @@ int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, in
 	}
     }
 
+    if(k == 0)
+    {
+	tr3[curr_state][sym].input = sym;
+	tr3[curr_state][sym].next_state = -1;
+	return 0;
+    }
+
     qsort(new_state, k, sizeof(int), compare);
 
     int flag=1, t;
@@ -218,8 +231,6 @@ int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, in
 
 	if(flag)
 	{
-	    free(new_state);
-	    new_state = states[x];
 	    t = x;
 	    break;
 	}
@@ -229,9 +240,10 @@ int dfa(transition **tr2, transition **tr3, int *v2,  int **states, int size, in
 	(*no_states)++;
 	t = *no_states-1;
 	v3[t] = k;
-	states[t] = new_state;
     }
 
     tr3[curr_state][sym].input = sym;
     tr3[curr_state][sym].next_state = t;
+
+    return k;
 }
